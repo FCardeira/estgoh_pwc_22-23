@@ -3,10 +3,14 @@ function realizarJogada(jogada) {
   const numAleartorio = geraNumeroAleatório(0, jogadas.length);
   const jogadaComputador = jogadas[numAleartorio];
 
-  return {
+  const resultadoJogada = {
     jogadaCPU: jogadaComputador,
     resultado: getResultado(jogada, jogadaComputador),
   };
+
+  atualizaPontuacao(resultadoJogada.resultado);
+
+  return resultadoJogada;
 }
 
 function getResultado(jogada, jogadaComputador) {
@@ -31,8 +35,51 @@ function getResultado(jogada, jogadaComputador) {
       }
       break;
   }
-
   return "Ganhaste 🎉";
+}
+// Atualiza a pontuação na página
+function atualizaPontuacao(resultado) {
+  //Obter pontuação do localStorage
+  var pontuacao = getPontuacaoFromLocalStorage();
+
+  if(resultado === "Ganhaste 🎉") {
+    pontuacao.vitorias++;
+  } else if(resultado === "Perdeste 🙁") {
+    pontuacao.derrotas++;
+  } else if(resultado === "Empate 🤝") {
+    pontuacao.empates++;
+  }
+
+  //Apresentar pontuação na página
+  refreshPontuacao(pontuacao);
+
+  //Guardar pontuação no localStorage
+  setPontuacaoToLocalStorage(pontuacao);
+
+}
+
+function getPontuacaoFromLocalStorage() {
+  var pontuacao = JSON.parse(localStorage.getItem("pontuacao"));
+
+  if(pontuacao === null) {
+    pontuacao = {
+      vitorias: 0,
+      empates: 0,
+      derrotas: 0
+    }
+  }
+
+  return pontuacao;
+}
+
+function setPontuacaoToLocalStorage(pontuacao) {
+  localStorage.setItem("pontuacao", JSON.stringify(pontuacao));
+}
+
+function refreshPontuacao(pontuacao) {
+  document.getElementById("vitorias").innerHTML = pontuacao.vitorias;
+  document.getElementById("empates").innerHTML = pontuacao.empates;
+  document.getElementById("derrotas").innerHTML = pontuacao.derrotas;
 }
 
 function geraNumeroAleatório(min, max) {
@@ -78,3 +125,17 @@ document
 document
   .getElementById("botao_tesoura")
   .addEventListener("click", onClickButton, false);
+
+document.getElementById("botao_reset").addEventListener("click", function() {
+  localStorage.removeItem("pontuacao");
+  refreshPontuacao({
+    vitorias: 0,
+    empates: 0,
+    derrotas: 0
+  });
+}, false);
+
+  window.onload = function() {
+    var pontuacao = getPontuacaoFromLocalStorage();
+    refreshPontuacao(pontuacao);
+  }
